@@ -1,0 +1,26 @@
+name: Assertzilla Playwright Java PR Workflow
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: java --version
+
+      - name: Verify Code Builds
+        run: |
+          chmod +x mvnw
+          ./mvnw clean validate
