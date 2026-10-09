@@ -1,0 +1,31 @@
+name: Assertzilla Playwright Java Publish Package Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish-package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: java --version
+
+      - name: Publish to GitHub Packages
+        run: |
+          chmod +x mvnw
+          ./mvnw --batch-mode deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
