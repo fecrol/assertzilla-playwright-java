@@ -6,7 +6,8 @@ on:
       - main
 
 jobs:
-  build:
+  verify-code:
+    name: Verify Code
     runs-on: ubuntu-latest
 
     steps:
