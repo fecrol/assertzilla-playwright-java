@@ -20,7 +20,6 @@ public class PlaywrightConfigurationLoaderTests {
 
     private Logger logger;
     private ListAppender<ILoggingEvent> appender;
-    private SmallRyeConfigBuilder configurationBuilder;
     private ConfigurationLoader playwrightConfigurationLoader;
 
     private static final String PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES = "properties";
@@ -32,7 +31,7 @@ public class PlaywrightConfigurationLoaderTests {
         appender.start();
         logger.addAppender(appender);
 
-        configurationBuilder = new SmallRyeConfigBuilder().addDefaultSources().addDefaultInterceptors();
+        SmallRyeConfigBuilder configurationBuilder = new SmallRyeConfigBuilder().addDefaultSources().addDefaultInterceptors();
         playwrightConfigurationLoader = new PlaywrightConfigurationLoader(configurationBuilder);
     }
 
