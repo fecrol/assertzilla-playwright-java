@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   verify-code:
     runs-on: ubuntu-latest
@@ -23,7 +27,15 @@ jobs:
       - name: Verify Code Builds
         run: |
           chmod +x mvnw
-          ./mvnw clean validate
+          ./mvnw --batch-mode validate
 
       - name: Unit Test
-        run: ./mvnw clean test
+        run: ./mvnw test
+
+      - name: Publish Coverage Report
+        uses: madrapps/jacoco-report@v1
+        with:
+          paths: target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 80
+          min-coverage-changed-files: 80
