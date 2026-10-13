@@ -38,6 +38,8 @@
 
         <hamcrest.version>3.0</hamcrest.version>
         <assertj-core.version>3.27.7</assertj-core.version>
+
+        <maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
     </properties>
 
     <dependencies>
@@ -91,4 +93,13 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>
