@@ -30,7 +30,7 @@ jobs:
           ./mvnw --batch-mode validate
 
       - name: Unit Test
-        run: ./mvnw test
+        run: PLAYWRIGHT_ENV_CONFIG=environment ./mvnw test
 
       - name: Publish Coverage Report
         uses: madrapps/jacoco-report@v1
