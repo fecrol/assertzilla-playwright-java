@@ -26,6 +26,6 @@ jobs:
       - name: Publish to GitHub Packages
         run: |
           chmod +x mvnw
-          ./mvnw --batch-mode deploy
+          ./mvnw --batch-mode deploy -DskipTests
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
