@@ -1,9 +1,11 @@
-package com.github.fecrol.assertzilla;
+package com.github.fecrol.assertzilla.unit;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.github.fecrol.assertzilla.ConfigurationLoader;
+import com.github.fecrol.assertzilla.PlaywrightConfigurationLoader;
 import io.smallrye.config.SmallRyeConfigBuilder;
 import org.assertj.core.api.Assertions;
 import org.hamcrest.MatcherAssert;
