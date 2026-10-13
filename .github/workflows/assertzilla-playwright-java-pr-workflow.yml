@@ -35,6 +35,9 @@ jobs:
       - name: Publish Coverage Report
         uses: madrapps/jacoco-report@v1
         with:
+          title: 📝 Coverage Report
+          pass-emoji: ✅
+          fail-emoji: ❌
           paths: target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 80
