@@ -24,3 +24,6 @@ jobs:
         run: |
           chmod +x mvnw
           ./mvnw clean validate
+
+      - name: Unit Test
+        run: ./mvnw clean test
