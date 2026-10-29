@@ -25,7 +25,7 @@ public interface PlaywrightConfiguration {
 
         interface Browser {
 
-                @WithDefault("chromium")
+            @WithDefault("chromium")
             String type();
 
             LaunchOptions launchOptions();
