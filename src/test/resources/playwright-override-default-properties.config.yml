@@ -1,0 +1,12 @@
+playwright:
+  browser:
+    type: "firefox"
+    launch-options:
+      headless: false
+      ignore-all-default-args: true
+      slow-mo: 20000
+      timeout: 10000
+    context-options:
+      color-scheme: dark
+      default-navigation-timeout: 0
+      default-timeout: 60000
