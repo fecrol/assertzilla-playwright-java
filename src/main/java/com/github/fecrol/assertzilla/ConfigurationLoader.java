@@ -4,5 +4,5 @@ import io.smallrye.config.Config;
 
 public interface ConfigurationLoader {
 
-    Config loadConfiguration();
+    Config loadConfiguration(String configuration);
 }
