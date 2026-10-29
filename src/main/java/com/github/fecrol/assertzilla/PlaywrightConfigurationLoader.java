@@ -27,34 +27,16 @@ public class PlaywrightConfigurationLoader implements ConfigurationLoader {
         this.configurationBuilder = configurationBuilder;
     }
 
-    private String getPlaywrightEnvConfigArg() {
-        String playwrightEnvConfig;
-        playwrightEnvConfig = System.getenv("PLAYWRIGHT_ENV_CONFIG");
-        String playwrightEnvConfigFromSystemProperties = System.getProperty("playwright.env.config");
+    @Override
+    public Config loadConfiguration(String configuration) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
-        if (!Strings.isNullOrEmpty(playwrightEnvConfigFromSystemProperties)) {
-            playwrightEnvConfig = playwrightEnvConfigFromSystemProperties;
-        }
-
-        return playwrightEnvConfig;
-    }
-
-    private List<String> getConfigsToLoad(String playwrightEnvConfig) {
         List<String> configsToLoad = new ArrayList<>();
         configsToLoad.add(DEFAULT_CONFIGURATION_FILE_NAME);
 
-        if (!Strings.isNullOrEmpty(playwrightEnvConfig)) {
-            configsToLoad.add(ENV_SPECIFIC_CONFIGURATION_FILE_NAME.apply(playwrightEnvConfig));
+        if (!Strings.isNullOrEmpty(configuration)) {
+            configsToLoad.add(ENV_SPECIFIC_CONFIGURATION_FILE_NAME.apply(configuration));
         }
-
-        return configsToLoad;
-    }
-
-    @Override
-    public Config loadConfiguration() {
-        String playwrightEnvConfig = getPlaywrightEnvConfigArg();
-        List<String> configsToLoad = getConfigsToLoad(playwrightEnvConfig);
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
         for (String configToLoad : configsToLoad) {
             URL resourceAsUrl = classLoader.getResource(configToLoad);
