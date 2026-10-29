@@ -5,26 +5,28 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.github.fecrol.assertzilla.ConfigurationLoader;
+import com.github.fecrol.assertzilla.PlaywrightConfiguration;
 import com.github.fecrol.assertzilla.PlaywrightConfigurationLoader;
+import com.microsoft.playwright.options.ColorScheme;
+import io.smallrye.config.Config;
 import io.smallrye.config.SmallRyeConfigBuilder;
 import org.assertj.core.api.Assertions;
-import org.hamcrest.MatcherAssert;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.*;
 import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 @Tags({
         @Tag("unit")
 })
 @DisplayName("Playwright Configuration Loader Tests")
-public class PlaywrightConfigurationLoaderTests {
+public class PlaywrightConfigurationLoaderTests { 
 
     private Logger logger;
     private ListAppender<ILoggingEvent> appender;
     private ConfigurationLoader playwrightConfigurationLoader;
-
-    private static final String PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES = "properties";
 
     @BeforeEach
     void beforeEach() {
@@ -47,7 +49,7 @@ public class PlaywrightConfigurationLoaderTests {
     @DisplayName("Default configuration should load successfully when found in resources")
     void defaultConfigurationShouldLoadSuccessfullyWhenFoundInResources() {
         // when
-        playwrightConfigurationLoader.loadConfiguration();
+        playwrightConfigurationLoader.loadConfiguration(null);
 
         // then
         Assertions.assertThat(appender.list).satisfiesOnlyOnce(event -> {
@@ -59,14 +61,13 @@ public class PlaywrightConfigurationLoaderTests {
     }
 
     @Test
-    @DisplayName("Environment specific configuration indicated via environment variables should load successfully when found in resources")
+    @DisplayName("Environment specific configuration should load successfully when found in resources")
     void environmentSpecificConfigurationIndicatedViaEnvironmentVariablesShouldLoadSuccessfullyWhenFoundInResources() {
         // given
-        String playwrightEnvConfigFromEnvVars = System.getenv("PLAYWRIGHT_ENV_CONFIG");
-        MatcherAssert.assertThat(playwrightEnvConfigFromEnvVars, is(not(emptyOrNullString())));
+        String playwrightEnvSpecificConfig = "env-specific";
 
         // when
-        playwrightConfigurationLoader.loadConfiguration();
+        playwrightConfigurationLoader.loadConfiguration(playwrightEnvSpecificConfig);
 
         // then
         Assertions.assertThat(appender.list).satisfiesOnlyOnce(event -> {
@@ -75,28 +76,7 @@ public class PlaywrightConfigurationLoaderTests {
                     .assertThat(event.getFormattedMessage())
                     .isEqualToIgnoringCase(String.format(
                             "Playwright configuration playwright-%s.config.yml loaded successfully.",
-                            playwrightEnvConfigFromEnvVars
-                    ));
-        });
-    }
-
-    @Test
-    @DisplayName("Environment specific configuration indicated via system properties should load successfully when found in resources")
-    void environmentSpecificConfigurationIndicatedViaSystemPropertiesShouldLoadSuccessfullyWhenFoundInResources() {
-        // given
-        System.setProperty("playwright.env.config", PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES);
-
-        // when
-        playwrightConfigurationLoader.loadConfiguration();
-
-        // then
-        Assertions.assertThat(appender.list).satisfiesOnlyOnce(event -> {
-            Assertions.assertThat(event.getLevel()).isEqualTo(Level.INFO);
-            Assertions
-                    .assertThat(event.getFormattedMessage())
-                    .isEqualToIgnoringCase(String.format(
-                            "Playwright configuration playwright-%s.config.yml loaded successfully.",
-                            PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES
+                            playwrightEnvSpecificConfig
                     ));
         });
     }
@@ -105,10 +85,10 @@ public class PlaywrightConfigurationLoaderTests {
     @DisplayName("Default and environment specific configurations should both load when found in resources")
     void defaultAndEnvironmentSpecificConfigurationsShouldBothLoadWhenFoundInResources() {
         // given
-        System.setProperty("playwright.env.config", PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES);
+        String playwrightEnvSpecificConfig = "env-specific";
 
         // when
-        playwrightConfigurationLoader.loadConfiguration();
+        playwrightConfigurationLoader.loadConfiguration(playwrightEnvSpecificConfig);
 
         // then
         Assertions.assertThat(appender.list).satisfiesExactlyInAnyOrder(
@@ -124,44 +104,20 @@ public class PlaywrightConfigurationLoaderTests {
                             .assertThat(envSpecificConfigEvent.getFormattedMessage())
                             .isEqualToIgnoringCase(String.format(
                                     "Playwright configuration playwright-%s.config.yml loaded successfully.",
-                                    PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES
+                                    playwrightEnvSpecificConfig
                             ));
                 }
         );
     }
 
     @Test
-    @DisplayName("Environment specific configuration indicated via system properties should override the value set via environment variables")
-    void environmentSpecificConfigurationIndicatedViaSystemPropertiesShouldOverrideTheValueSetViaEnvironmentVariables() {
-        // given
-        String playwrightEnvConfigFromEnvVars = System.getenv("PLAYWRIGHT_ENV_CONFIG");
-        MatcherAssert.assertThat(playwrightEnvConfigFromEnvVars, is(not(emptyOrNullString())));
-        System.setProperty("playwright.env.config", PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES);
-
-        // when
-        playwrightConfigurationLoader.loadConfiguration();
-
-        // then
-        Assertions.assertThat(appender.list).satisfiesOnlyOnce(event -> {
-            Assertions.assertThat(event.getLevel()).isEqualTo(Level.INFO);
-            Assertions
-                    .assertThat(event.getFormattedMessage())
-                    .isEqualToIgnoringCase(String.format(
-                            "Playwright configuration playwright-%s.config.yml loaded successfully.",
-                            PLAYWRIGHT_ENV_CONFIG_SET_VIA_SYSTEM_PROPERTIES
-                    ));
-        });
-    }
-
-    @Test
     @DisplayName("Warning message should be logged when environment specific configuration is not found in resources")
     void warningMessageShouldBeLoggedWhenEnvironmentSpecificConfigurationIsNotFoundInResources() {
         // given
-        String nonExistentConfiguration = "does_not_exist";
-        System.setProperty("playwright.env.config", nonExistentConfiguration);
+        String nonExistentConfiguration = "non-existent";
 
         // when
-        playwrightConfigurationLoader.loadConfiguration();
+        playwrightConfigurationLoader.loadConfiguration(nonExistentConfiguration);
 
         // then
         Assertions.assertThat(appender.list).satisfiesOnlyOnce(event -> {
@@ -172,6 +128,62 @@ public class PlaywrightConfigurationLoaderTests {
                             "Playwright configuration playwright-%s.config.yml not found under resources.",
                             nonExistentConfiguration
                     ));
+        });
+    }
+
+    @Test
+    @DisplayName("Loaded configuration should map to POJO model successfully")
+    void loadedConfigurationShouldMapToPojoModelSuccessfully() {
+        // given
+        Config configuration = playwrightConfigurationLoader.loadConfiguration(null);
+
+        // then
+        assertDoesNotThrow(() -> configuration.getConfigMapping(PlaywrightConfiguration.class));
+    }
+
+    @Test
+    @DisplayName("Default configuration values should be set successfully")
+    void defaultConfigurationValuesShouldBeSetSuccessfully() {
+        // given
+        Config configuration = playwrightConfigurationLoader.loadConfiguration(null);
+
+        // when
+        PlaywrightConfiguration playwrightConfiguration = configuration.getConfigMapping(PlaywrightConfiguration.class);
+        PlaywrightConfiguration.Playwright.Browser browserFromConfig = playwrightConfiguration.playwright().browser();
+
+        // then
+        SoftAssertions.assertSoftly($ -> {
+            $.assertThat(browserFromConfig.type()).isEqualToIgnoringCase("chromium");
+            $.assertThat(browserFromConfig.launchOptions().headless()).isTrue();
+            $.assertThat(browserFromConfig.launchOptions().ignoreAllDefaultArgs()).isFalse();
+            $.assertThat(browserFromConfig.launchOptions().slowMo()).isEqualTo(0);
+            $.assertThat(browserFromConfig.launchOptions().timeout()).isEqualTo(30000);
+            $.assertThat(browserFromConfig.contextOptions().colorScheme()).isEqualTo(ColorScheme.LIGHT);
+            $.assertThat(browserFromConfig.contextOptions().defaultNavigationTimeout()).isEqualTo(30000);
+            $.assertThat(browserFromConfig.contextOptions().defaultTimeout()).isEqualTo(30000);
+        });
+    }
+
+    @Test
+    @DisplayName("Default configuration values should be overridable by environment specific configuration values")
+    void defaultConfigurationValuesShouldBeOverridable() {
+        // given
+        Config configuration = playwrightConfigurationLoader.loadConfiguration("override-default-properties");
+
+        // when
+        PlaywrightConfiguration playwrightConfiguration = configuration.getConfigMapping(PlaywrightConfiguration.class);
+        PlaywrightConfiguration.Playwright.Browser browserFromConfig = playwrightConfiguration.playwright().browser();
+
+        // then
+        SoftAssertions.assertSoftly($ -> {
+            $.assertThat(browserFromConfig.type()).isEqualToIgnoringCase("firefox");
+            $.assertThat(browserFromConfig.launchOptions().headless()).isFalse();
+            $.assertThat(browserFromConfig.launchOptions().ignoreAllDefaultArgs()).isTrue();
+            $.assertThat(browserFromConfig.launchOptions().slowMo()).isEqualTo(20000);
+            $.assertThat(browserFromConfig.launchOptions().timeout()).isEqualTo(10000);
+            $.assertThat(browserFromConfig.contextOptions().colorScheme()).isEqualTo(ColorScheme.DARK);
+            $.assertThat(browserFromConfig.contextOptions().defaultNavigationTimeout()).isEqualTo(0);
+            $.assertThat(browserFromConfig.contextOptions().defaultTimeout()).isEqualTo(60000);
         });
     }
 }
